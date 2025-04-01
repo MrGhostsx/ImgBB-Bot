@@ -1,13 +1,14 @@
+from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
+from pyrogram import filters, Client, errors, enums
+from pyrogram.errors import UserNotParticipant
 import asyncio
 import os
 import shutil
 import traceback
 from flask import Flask
 import imgbbpy
-import pyromod.listen  # Ensure pyromod is installed
-from pyrogram import Client, filters
+import pyromod.listen
 from pyromod.helpers import ikb
-
 from utils.configs import Tr, Var
 
 # Initialize Flask app for Koyeb
@@ -31,6 +32,12 @@ Imgclient = imgbbpy.SyncClient(Var.API)
 def health():
     return "OK", 200
 
+# Force join channel button
+FORCE_JOIN_BTN = ikb([
+    [("🔥 Join Channel", f"https://t.me/{Var.FORCE_JOIN_CHANNEL}", "url")],
+    [("🔄 Check Join", "check_join")]
+])
+
 START_BTN = ikb([
     [("👾 About", "about"), ("📚 Help", "help")],
     [("👨‍💻 Developer", "https://t.me/Tech_Shreyansh29", "url"), ("❌ Close", "close")],
@@ -39,13 +46,40 @@ START_BTN = ikb([
 HOME_BTN = ikb([[("🏠 Home", "home"), ("❌ Close", "close")]])
 CLOSE_BTN = [("❌ Close", "close")]
 
+async def is_user_joined(user_id):
+    try:
+        await Img.get_chat_member(Var.FORCE_JOIN_CHANNEL, user_id)
+        return True
+    except UserNotParticipant:
+        return False
+    except Exception as e:
+        print(f"Error checking user join status: {e}")
+        return False
+
 @Img.on_callback_query()
 async def cdata(c, q):
     chat_id = q.from_user.id
     data = q.data
     wait = Tr.WAIT
 
-    if data == "home":
+    if data == "check_join":
+        if await is_user_joined(chat_id):
+            await q.answer("✅ You've joined the channel!", show_alert=True)
+            await q.message.edit_text(
+                text=Tr.START_TEXT.format(q.from_user.mention),
+                reply_markup=START_BTN,
+                disable_web_page_preview=True,
+            )
+        else:
+            await q.answer("❌ You haven't joined the channel yet!", show_alert=True)
+    elif data == "home":
+        if not await is_user_joined(chat_id):
+            await q.message.edit_text(
+                text="**⚠️ Access Denied! ⚠️**\n\nYou must join our channel to use this bot.\n\n",
+                reply_markup=FORCE_JOIN_BTN,
+                disable_web_page_preview=True
+            )
+            return
         await q.answer(wait)
         await q.message.edit_text(
             text=Tr.START_TEXT.format(q.from_user.mention),
@@ -53,11 +87,25 @@ async def cdata(c, q):
             disable_web_page_preview=True,
         )
     elif data == "help":
+        if not await is_user_joined(chat_id):
+            await q.message.edit_text(
+                text="**⚠️ Access Denied! ⚠️**\n\nYou must join our channel to use this bot.\n\n",
+                reply_markup=FORCE_JOIN_BTN,
+                disable_web_page_preview=True
+            )
+            return
         await q.answer(wait)
         await q.message.edit_text(
             text=Tr.HELP_TEXT, reply_markup=HOME_BTN, disable_web_page_preview=True
         )
     elif data == "about":
+        if not await is_user_joined(chat_id):
+            await q.message.edit_text(
+                text="**⚠️ Access Denied! ⚠️**\n\nYou must join our channel to use this bot.\n\n",
+                reply_markup=FORCE_JOIN_BTN,
+                disable_web_page_preview=True
+            )
+            return
         await q.answer(wait)
         await q.message.edit_text(
             text=Tr.ABOUT_TEXT,
@@ -71,6 +119,14 @@ async def cdata(c, q):
         except:
             pass
     elif data.startswith("del_"):
+        if not await is_user_joined(chat_id):
+            await q.message.edit_text(
+                text="**⚠️ Access Denied! ⚠️**\n\nYou must join our channel to use this bot.\n\n",
+                reply_markup=FORCE_JOIN_BTN,
+                disable_web_page_preview=True
+            )
+            return
+            
         exp = int(data.split("_")[1]) if data.split("_")[1] != "0" else None
         await q.answer(wait)
         r = q.message.reply_to_message
@@ -103,6 +159,15 @@ async def cdata(c, q):
 
 @Img.on_message(filters.private & filters.command(["start"]))
 async def start(c, m):
+    if not await is_user_joined(m.from_user.id):
+        await m.reply_photo(
+            photo=Var.START_PIC,
+            caption="**⚠️ Access Denied! ⚠️**\n\nYou must join our channel to use this bot.\n\n",
+            reply_markup=FORCE_JOIN_BTN,
+            quote=True,
+        )
+        return
+        
     await m.reply_photo(
         photo=Var.START_PIC,
         caption=Tr.START_TEXT.format(m.from_user.mention),
@@ -114,8 +179,17 @@ async def start(c, m):
     filters.private & (filters.photo | filters.sticker | filters.document | filters.animation)
 )
 async def getimglink(c, m):
+    if not await is_user_joined(m.from_user.id):
+        await m.reply_text(
+            text="**⚠️ Access Denied! ⚠️**\n\nYou must join our channel to use this bot.\n\n",
+            reply_markup=FORCE_JOIN_BTN,
+            quote=True
+        )
+        return
+        
     if not Var.API:
         return await m.reply_text(Tr.ERR_TEXT, quote=True)
+        
     BTN = ikb([
         [("⚡ 5 Min", "del_300"), ("🧃 15 Min", "del_900"), ("⚡ 30 Min", "del_1800")],
         [("🧃 1 Hour", "del_3600"), ("⚡ 2 Hours", "del_7200"), ("🧃 6 Hours", "del_21600"), ("⚡ 12 Hours", "del_43200")],
