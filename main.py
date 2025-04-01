@@ -34,8 +34,8 @@ def health():
 
 # Force join channel button
 FORCE_JOIN_BTN = ikb([
-    [("🔥 Join Channel", f"https://t.me/{Var.FORCE_JOIN_CHANNEL}", "url")],
-    [("🔄 Check Join", "check_join")]
+    [("🍀 Join Channel", f"https://t.me/{Var.FORCE_JOIN_CHANNEL}", "url")],
+    [("☘️ Check Join", "check_join")]
 ])
 
 START_BTN = ikb([
