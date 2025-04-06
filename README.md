@@ -52,4 +52,4 @@ python3 main.py
 
 
 # Support 
-<a href="https://telegram.me/Tech_Shreyansh2"><img src="https://img.shields.io/badge/Support_Group-1a66ff?style=for-the-badge&logo=telegram&logoColor=white"></a> <a href="https://telegram.me/Tech_Shreyansh"><img src="https://img.shields.io/badge/Updates_Channel-1a66ff?style=for-the-badge&logo=telegram&logoColor=white"></a>
+<a href="https://telegram.me/Tech_Shreyansh2"><img src="https://img.shields.io/badge/Support_Group-1a66ff?style=for-the-badge&logo=telegram&logoColor=white"></a> <a href="https://telegram.me/Tech_Shreyansh1"><img src="https://img.shields.io/badge/Updates_Channel-1a66ff?style=for-the-badge&logo=telegram&logoColor=white"></a>
