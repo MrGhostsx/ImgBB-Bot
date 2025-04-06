@@ -12,7 +12,7 @@ class Var(object):
 
     # Get from my.telegram.org
     API_HASH = os.environ.get("API_HASH", "")
-    FORCE_JOIN_CHANNEL = "Tech_Shreyansh"  # Your channel username without @
+    FORCE_JOIN_CHANNEL = "Tech_Shreyansh1"  # Your channel username without @
 
     # To record start time of bot
     BOT_START_TIME = time.time()
